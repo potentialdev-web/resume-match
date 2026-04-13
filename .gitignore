@@ -1,0 +1,45 @@
+# ── Node / Next.js ──────────────────────────────────────────────────────────
+**/node_modules/
+**/.next/
+**/out/
+**/build/
+**/.pnp
+**/.pnp.*
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+**/*.tsbuildinfo
+**/next-env.d.ts
+
+# ── Python ───────────────────────────────────────────────────────────────────
+**/__pycache__/
+**/*.py[cod]
+**/*.so
+**/.venv/
+**/venv/
+**/env/
+**/*.egg-info/
+**/dist/
+**/build/
+uv.lock
+
+# ── Environment / secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+**/config.json
+
+# ── Runtime data (DB, uploads, generated files) ──────────────────────────────
+apps/backend/data/
+
+# ── Misc ─────────────────────────────────────────────────────────────────────
+.DS_Store
+*.pem
+.vercel
+.idea/
+*.sqlite3
+*.db
+.pytest_cache/
+.coverage
+htmlcov/

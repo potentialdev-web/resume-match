@@ -1,0 +1,19 @@
+services:
+  resume-gen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o-mini}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_API_BASE=${LLM_API_BASE:-}
+      - FRONTEND_BASE_URL=http://localhost:3000
+      - BACKEND_ORIGIN=http://127.0.0.1:8000
+    volumes:
+      - resume-gen-data:/app/apps/backend/data
+
+volumes:
+  resume-gen-data:
