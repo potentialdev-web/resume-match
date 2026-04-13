@@ -6,6 +6,8 @@ COPY apps/frontend/package.json ./
 RUN npm install --frozen-lockfile 2>/dev/null || npm install
 
 COPY apps/frontend ./
+# Ensure public/ always exists so the COPY in the runtime stage never fails
+RUN mkdir -p public
 ENV NEXT_PUBLIC_API_URL=/api/v1
 RUN npm run build
 
@@ -36,7 +38,7 @@ COPY apps/backend ./apps/backend
 # Frontend build output
 COPY --from=frontend-builder /app/apps/frontend/.next/standalone ./apps/frontend
 COPY --from=frontend-builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
-COPY --from=frontend-builder /app/apps/frontend/public ./apps/frontend/public 2>/dev/null || true
+COPY --from=frontend-builder /app/apps/frontend/public ./apps/frontend/public
 
 # Start script
 COPY docker/start.sh /start.sh
