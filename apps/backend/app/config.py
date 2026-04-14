@@ -91,6 +91,15 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid LOG_LLM: {value}")
         return value
 
+    # Auth
+    jwt_secret: str = "change-me-in-production"
+    admin_password: str = "admin"
+    allowed_emails: list[str] = [
+        "potentialdev69@gmail.com",
+        "coding.kei@gmail.com",
+        "homeoffer25@gmail.com",
+    ]
+
     host: str = "0.0.0.0"
     port: int = 8000
     log_level: Literal["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"] = "INFO"

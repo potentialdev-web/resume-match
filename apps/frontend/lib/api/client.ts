@@ -14,9 +14,19 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${getApiBase()}${path}`;
+  const cookieHeader: Record<string, string> = {};
+  if (typeof window === "undefined") {
+    try {
+      const { cookies } = await import("next/headers");
+      const token = (await cookies()).get("token")?.value;
+      if (token) cookieHeader["Cookie"] = `token=${token}`;
+    } catch { /* not in RSC context */ }
+  }
   const res = await fetch(url, {
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...cookieHeader,
       ...options.headers,
     },
     ...options,
@@ -43,6 +53,7 @@ export async function uploadResume(file: File) {
   form.append("file", file);
   const res = await fetch(`${getApiBase()}/resumes/upload`, {
     method: "POST",
+    credentials: "include",
     body: form,
   });
   if (!res.ok) {

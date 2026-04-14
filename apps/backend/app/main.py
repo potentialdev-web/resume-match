@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import init_db
-from app.routers import config, generate, health, jobs, resumes, score
+from app.routers import auth, config, generate, health, jobs, resumes, score
 
 logging.basicConfig(
     level=getattr(logging, settings.log_level),
@@ -33,6 +33,7 @@ app.add_middleware(
 API_PREFIX = "/api/v1"
 
 app.include_router(health.router, prefix=API_PREFIX)
+app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(resumes.router, prefix=API_PREFIX)
 app.include_router(jobs.router, prefix=API_PREFIX)
 app.include_router(generate.router, prefix=API_PREFIX)

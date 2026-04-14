@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileText, LayoutDashboard, Settings } from "lucide-react";
+import { LogoutButton } from "@/components/auth/logout-button";
 
 export default function DefaultLayout({
   children,
@@ -32,7 +33,7 @@ export default function DefaultLayout({
             </Link>
           </div>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
             <Link
               href="/settings"
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -40,6 +41,7 @@ export default function DefaultLayout({
               <Settings className="w-4 h-4" />
               Settings
             </Link>
+            <LogoutButton />
           </div>
         </div>
       </nav>

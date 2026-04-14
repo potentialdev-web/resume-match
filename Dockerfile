@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir uv && \
     uv pip install --system -r apps/backend/pyproject.toml 2>/dev/null || \
     pip install --no-cache-dir \
         fastapi uvicorn python-multipart pydantic pydantic-settings \
-        sqlmodel litellm "markitdown[docx]" "pdfminer.six" playwright python-docx python-dotenv PyJWT
+        sqlmodel litellm "markitdown[docx]" "pdfminer.six" playwright python-docx python-dotenv email-validator
 
 # Playwright browser
 RUN python -m playwright install chromium --with-deps 2>/dev/null || true
