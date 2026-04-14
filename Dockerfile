@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir uv && \
     uv pip install --system -r apps/backend/pyproject.toml 2>/dev/null || \
     pip install --no-cache-dir \
         fastapi uvicorn python-multipart pydantic pydantic-settings \
-        sqlmodel litellm "markitdown[docx]" "pdfminer.six" playwright python-docx python-dotenv
+        sqlmodel litellm "markitdown[docx]" "pdfminer.six" playwright python-docx python-dotenv PyJWT
 
 # Playwright browser
 RUN python -m playwright install chromium --with-deps 2>/dev/null || true
@@ -40,10 +40,20 @@ COPY --from=frontend-builder /app/apps/frontend/.next/standalone ./apps/frontend
 COPY --from=frontend-builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=frontend-builder /app/apps/frontend/public ./apps/frontend/public
 
-# Start script
-COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+# Only expose the frontend port.
+# Railway routes external traffic here; backend (8000) stays internal.
+EXPOSE 3000
 
-EXPOSE 3000 8000
-
-CMD ["/start.sh"]
+# Start backend first, wait until it's healthy, then start frontend.
+# Inlined in CMD (not a separate script) so it can never be served stale from cache.
+CMD bash -c "\
+  cd /app/apps/backend && \
+  python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 & \
+  echo 'Waiting for backend...' && \
+  for i in \$(seq 1 90); do \
+    curl -sf http://127.0.0.1:8000/api/v1/health > /dev/null 2>&1 && \
+    echo \"Backend ready after \${i}s — starting frontend\" && break; \
+    sleep 1; \
+  done && \
+  cd /app/apps/frontend && \
+  HOSTNAME=0.0.0.0 PORT=\${PORT:-3000} BACKEND_ORIGIN=http://127.0.0.1:8000 node server.js"
