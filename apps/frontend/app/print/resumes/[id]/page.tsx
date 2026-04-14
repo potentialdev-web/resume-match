@@ -25,6 +25,7 @@ export default async function PrintResumePage({ params, searchParams }: PrintPag
   return (
     <html>
       <head>
+        <title>{resumeData.parsed_data.contact?.name ? `${resumeData.parsed_data.contact.name} - Resume` : "Resume"}</title>
         <style>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
