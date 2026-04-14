@@ -11,7 +11,7 @@ export default async function PrintResumePage({ params, searchParams }: PrintPag
   const { id } = await params;
   const { template } = await searchParams;
 
-  let resumeData;
+  let resumeData: Awaited<ReturnType<typeof getResume>> | undefined;
   try {
     resumeData = await getResume(id);
   } catch {
@@ -22,10 +22,12 @@ export default async function PrintResumePage({ params, searchParams }: PrintPag
     notFound();
   }
 
+  const resume = resumeData!;
+
   return (
     <html>
       <head>
-        <title>{resumeData.parsed_data.contact?.name ? `${resumeData.parsed_data.contact.name} - Resume` : "Resume"}</title>
+        <title>{resume.parsed_data.personalInfo?.name ? `${resume.parsed_data.personalInfo.name} - Resume` : "Resume"}</title>
         <style>{`
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -34,7 +36,7 @@ export default async function PrintResumePage({ params, searchParams }: PrintPag
       </head>
       <body>
         <ResumeRenderer
-          resume={resumeData.parsed_data}
+          resume={resume.parsed_data}
           template={(template as "modern" | "swiss") || "modern"}
         />
       </body>
