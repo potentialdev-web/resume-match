@@ -56,4 +56,4 @@ CMD bash -c "\
     sleep 1; \
   done && \
   cd /app/apps/frontend && \
-  HOSTNAME=0.0.0.0 PORT=\${PORT:-3000} BACKEND_ORIGIN=http://127.0.0.1:8000 node server.js"
+  HOSTNAME=0.0.0.0 PORT=3000 BACKEND_ORIGIN=http://127.0.0.1:8000 node server.js"
