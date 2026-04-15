@@ -17,6 +17,7 @@ import {
   Layers,
 } from "lucide-react";
 import Link from "next/link";
+import { resumeDisplayTitle } from "@/lib/utils";
 
 interface ResumeBuilderProps {
   resumeId: string;
@@ -221,8 +222,7 @@ export function ResumeBuilder({
                 const active = v.id === resumeId;
                 const title = v.is_base
                   ? "Base resume"
-                  : v.filename.replace(/\.[^.]+$/, "").replace(/^tailored_/i, "Tailored ") ||
-                    "Tailored";
+                  : resumeDisplayTitle(v.filename);
                 return (
                   <Link
                     key={v.id}

@@ -291,6 +291,7 @@ class GeneratePreviewResponse(BaseModel):
     ats_score: ATSScore
     diffs: list[dict[str, Any]]
     base_ats_score: ATSScore | None = None
+    job_label: str = ""
 
 
 class GenerateConfirmResponse(BaseModel):

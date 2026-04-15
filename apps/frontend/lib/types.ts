@@ -130,6 +130,8 @@ export interface GeneratePreviewResponse {
   ats_score: ATSScore;
   diffs: DiffChange[];
   base_ats_score: ATSScore | null;
+  /** Human-readable name derived from the job description (used when saving) */
+  job_label?: string;
 }
 
 export interface GenerateConfirmResponse {

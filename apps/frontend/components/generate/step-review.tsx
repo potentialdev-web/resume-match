@@ -14,6 +14,8 @@ interface StepReviewProps {
   atsScore: ATSScore;
   baseAtsScore: ATSScore | null;
   diffs: DiffChange[];
+  /** Dashboard / builder title derived from the job description */
+  jobLabel?: string | null;
   onBack: () => void;
 }
 
@@ -23,6 +25,7 @@ export function StepReview({
   atsScore,
   baseAtsScore,
   diffs,
+  jobLabel,
   onBack,
 }: StepReviewProps) {
   const router = useRouter();
@@ -93,6 +96,12 @@ export function StepReview({
         <p className="text-sm text-gray-400">
           Your resume has been tailored. Review the ATS score breakdown and changes before saving.
         </p>
+        {jobLabel && (
+          <p className="text-sm text-indigo-300 mt-2">
+            Saved to dashboard as:{" "}
+            <span className="font-medium text-white">{jobLabel}</span>
+          </p>
+        )}
       </div>
 
       {/* Main 2-col layout */}

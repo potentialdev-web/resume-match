@@ -24,6 +24,7 @@ from app.services.improver import (
     run_quantification_pass,
     _preserve_personal_info,
 )
+from app.services.job_label import display_label_from_jd
 
 logger = logging.getLogger(__name__)
 
@@ -208,4 +209,5 @@ async def run_generation_pipeline(
         "diffs": diffs,
         "ats_score": tailored_ats,
         "base_ats_score": base_ats,
+        "job_label": display_label_from_jd(job_description),
     }

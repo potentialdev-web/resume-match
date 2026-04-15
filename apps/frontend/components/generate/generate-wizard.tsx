@@ -74,6 +74,7 @@ export function GenerateWizard() {
   const [atsScore, setAtsScore] = useState<ATSScore | null>(null);
   const [baseAtsScore, setBaseAtsScore] = useState<ATSScore | null>(null);
   const [diffs, setDiffs] = useState<DiffChange[]>([]);
+  const [jobLabel, setJobLabel] = useState<string | null>(null);
   const [genError, setGenError] = useState<string | null>(null);
 
   const handleUploadComplete = (rid: string, _parsedData: ResumeData) => {
@@ -94,6 +95,7 @@ export function GenerateWizard() {
       setAtsScore(preview.ats_score);
       setBaseAtsScore(preview.base_ats_score ?? null);
       setDiffs(preview.diffs);
+      setJobLabel(preview.job_label?.trim() || null);
       setStep("review");
     } catch (e: unknown) {
       setGenError(e instanceof Error ? e.message : "Generation failed");
@@ -149,6 +151,7 @@ export function GenerateWizard() {
               atsScore={atsScore}
               baseAtsScore={baseAtsScore}
               diffs={diffs}
+              jobLabel={jobLabel}
               onBack={() => setStep("upload")}
             />
           )}

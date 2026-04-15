@@ -25,6 +25,7 @@ from app.schemas.models import (
     ResumeData,
 )
 from app.services.generator import run_generation_pipeline
+from app.services.job_label import safe_filename_stem
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 logger = logging.getLogger(__name__)
@@ -74,6 +75,7 @@ async def generate_preview(
     base_ats: ATSScore = result["base_ats_score"]
     diffs: list[Any] = result["diffs"]
     job_keywords = result["job_keywords"]
+    job_label: str = result.get("job_label") or ""
 
     # Cache for confirm step
     generation_id = str(uuid.uuid4())
@@ -85,6 +87,7 @@ async def generate_preview(
         "base_ats_score": base_ats.model_dump(),
         "diffs": diffs,
         "job_keywords": job_keywords,
+        "job_label": job_label,
     }
 
     return GeneratePreviewResponse(
@@ -93,6 +96,7 @@ async def generate_preview(
         ats_score=ats_score,
         diffs=diffs,
         base_ats_score=base_ats,
+        job_label=job_label,
     )
 
 
@@ -130,9 +134,12 @@ async def confirm_generation(
     # Save tailored resume as child of base
     ats_score = ATSScore.model_validate(ats_score_dict)
 
+    job_label = str(cached.get("job_label") or "").strip()
+    stem = safe_filename_stem(job_label if job_label else "Tailored resume")
+
     tailored_resume = create_resume(
         session,
-        filename=f"tailored_{resume_id[:8]}.json",
+        filename=f"{stem}.json",
         content=json.dumps(tailored),
         is_master=False,
         parent_id=resume_id,
@@ -190,10 +197,11 @@ async def generate_one_shot(
 
     tailored = result["tailored_resume"]
     ats_score: ATSScore = result["ats_score"]
+    stem = safe_filename_stem(result.get("job_label") or "Tailored resume")
 
     tailored_resume = create_resume(
         session,
-        filename=f"tailored_{resume.id[:8]}.json",
+        filename=f"{stem}.json",
         content=json.dumps(tailored),
         is_master=False,
         parent_id=resume.id,

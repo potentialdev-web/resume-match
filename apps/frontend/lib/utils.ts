@@ -31,3 +31,13 @@ export function gradeColor(grade: string): string {
   if (grade.startsWith("C")) return "text-orange-400";
   return "text-red-400";
 }
+
+/** Readable dashboard title from stored filename (strips extension, labels old tailored_* ids). */
+export function resumeDisplayTitle(filename: string): string {
+  const base = (filename || "").replace(/\.[^.]+$/, "").trim();
+  if (!base) return "Untitled";
+  if (/^tailored_[a-f0-9]{6,}$/i.test(base)) {
+    return "Tailored resume (auto ID)";
+  }
+  return base;
+}

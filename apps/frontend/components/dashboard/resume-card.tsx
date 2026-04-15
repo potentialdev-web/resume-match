@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ResumeListItem } from "@/lib/types";
-import { scoreColor, formatDate } from "@/lib/utils";
+import { scoreColor, formatDate, resumeDisplayTitle } from "@/lib/utils";
 import { ScoreRingCompact } from "@/components/ats/score-ring";
 import { FileText, Trash2, Download, Edit3, Crown, Sparkles } from "lucide-react";
 import { deleteResume } from "@/lib/api/client";
@@ -54,8 +54,8 @@ export function ResumeCard({ resume, onDeleted }: ResumeCardProps) {
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate">
-            {resume.filename.replace(/\.[^.]+$/, "") || "Untitled"}
+          <h3 className="text-sm font-semibold text-white truncate" title={resume.filename}>
+            {resumeDisplayTitle(resume.filename)}
           </h3>
           {resume.parent_id && (
             <p className="text-xs text-indigo-400 mt-0.5">Tailored resume</p>
