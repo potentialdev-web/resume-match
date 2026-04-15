@@ -348,6 +348,101 @@ function EditForm({
         ))}
       </Section>
 
+      {/* Education */}
+      <Section title="Education">
+        {(resume.education?.length ?? 0) === 0 && (
+          <p className="text-sm text-gray-500 mb-3">
+            No education entries yet. Add your university or school below.
+          </p>
+        )}
+        {(resume.education ?? []).map((edu, i) => (
+          <div
+            key={edu.id || i}
+            className="border border-white/10 rounded-lg p-4 space-y-3 mb-3"
+          >
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  const list = [...(resume.education ?? [])];
+                  list.splice(i, 1);
+                  onChange("education", list);
+                }}
+                className="text-xs text-red-400 hover:text-red-300"
+              >
+                Remove
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Field
+                label="Institution"
+                value={edu.institution}
+                onChange={(v) => {
+                  const updated = [...(resume.education ?? [])];
+                  updated[i] = { ...edu, institution: v };
+                  onChange("education", updated);
+                }}
+              />
+              <Field
+                label="Degree"
+                value={edu.degree}
+                onChange={(v) => {
+                  const updated = [...(resume.education ?? [])];
+                  updated[i] = { ...edu, degree: v };
+                  onChange("education", updated);
+                }}
+              />
+              <DateField
+                label="Years"
+                value={edu.years}
+                onChange={(v) => {
+                  const updated = [...(resume.education ?? [])];
+                  updated[i] = { ...edu, years: v };
+                  onChange("education", updated);
+                }}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 block mb-1">
+                Details (optional — honors, GPA, coursework)
+              </label>
+              <textarea
+                value={edu.description ?? ""}
+                onChange={(e) => {
+                  const updated = [...(resume.education ?? [])];
+                  updated[i] = {
+                    ...edu,
+                    description: e.target.value || null,
+                  };
+                  onChange("education", updated);
+                }}
+                rows={2}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"
+              />
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => {
+            const list = [...(resume.education ?? [])];
+            const nextId =
+              list.reduce((m, e) => Math.max(m, e.id ?? 0), 0) + 1;
+            list.push({
+              id: nextId,
+              institution: "",
+              degree: "",
+              years: "",
+              description: null,
+            });
+            onChange("education", list);
+          }}
+          className="text-sm text-indigo-400 hover:text-indigo-300"
+        >
+          + Add school
+        </button>
+      </Section>
+
       {/* Skills */}
       <Section title="Technical Skills">
         <div>
