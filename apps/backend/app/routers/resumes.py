@@ -18,6 +18,7 @@ from app.database import (
     get_master_resume,
     get_resume,
     get_session,
+    list_family_members,
     list_resumes,
     update_resume,
 )
@@ -150,6 +151,25 @@ def get_resume_by_id(
             except json.JSONDecodeError:
                 pass
 
+    family_members = list_family_members(session, resume_id)
+    base_id = family_members[0].id if family_members else resume.id
+    family_payload: list[dict[str, Any]] = []
+    for m in family_members:
+        ats_m: ATSScore | None = None
+        if m.ats_score:
+            try:
+                ats_m = ATSScore.model_validate(json.loads(m.ats_score))
+            except Exception:
+                pass
+        family_payload.append(
+            {
+                "id": m.id,
+                "filename": m.filename,
+                "is_base": m.id == base_id,
+                "ats_overall": round(ats_m.overall) if ats_m else None,
+            }
+        )
+
     return {
         "id": resume.id,
         "filename": resume.filename,
@@ -160,6 +180,8 @@ def get_resume_by_id(
         "ats_score": ats.model_dump() if ats else None,
         "job_id": job_id,
         "job_keywords": job_keywords,
+        "base_id": base_id,
+        "family": family_payload,
         "created_at": resume.created_at.isoformat(),
         "updated_at": resume.updated_at.isoformat(),
     }

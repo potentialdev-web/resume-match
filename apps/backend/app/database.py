@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+from sqlalchemy import or_
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from app.config import settings
@@ -83,6 +84,31 @@ def get_resume(session: Session, resume_id: str) -> Optional[Resume]:
 
 def list_resumes(session: Session) -> list[Resume]:
     return list(session.exec(select(Resume).order_by(Resume.created_at.desc())).all())
+
+
+def _created_ts(dt: datetime) -> float:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc).timestamp()
+    return dt.timestamp()
+
+
+def list_family_members(session: Session, resume_id: str) -> list[Resume]:
+    """Base resume first, then tailored children (newest first)."""
+    r = get_resume(session, resume_id)
+    if not r:
+        return []
+    base_id = r.id if r.is_master else (r.parent_id or r.id)
+    statement = select(Resume).where(
+        or_(Resume.id == base_id, Resume.parent_id == base_id)
+    )
+    members = list(session.exec(statement).all())
+    members.sort(
+        key=lambda m: (
+            0 if m.id == base_id else 1,
+            -_created_ts(m.created_at),
+        )
+    )
+    return members
 
 
 def get_master_resume(session: Session) -> Optional[Resume]:

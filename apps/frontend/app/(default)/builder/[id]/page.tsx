@@ -26,6 +26,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
       initialResume={resumeData.parsed_data}
       initialAtsScore={resumeData.ats_score}
       jobKeywords={resumeData.job_keywords ?? undefined}
+      family={resumeData.family ?? []}
     />
   );
 }

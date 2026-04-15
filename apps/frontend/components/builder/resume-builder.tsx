@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ATSScore, JobKeywords, ResumeData } from "@/lib/types";
+import { ATSScore, JobKeywords, ResumeData, ResumeFamilyVariant } from "@/lib/types";
 import { ATSScorePanel } from "@/components/ats/ats-score-panel";
 import { ResumeRenderer } from "@/components/resume/resume-renderer";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   Eye,
   LayoutPanelLeft,
   Sparkles,
+  Layers,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -22,6 +23,8 @@ interface ResumeBuilderProps {
   initialResume: ResumeData;
   initialAtsScore: ATSScore | null;
   jobKeywords?: JobKeywords;
+  /** Base + tailored variants to switch in the left sidebar */
+  family?: ResumeFamilyVariant[];
 }
 
 export function ResumeBuilder({
@@ -29,6 +32,7 @@ export function ResumeBuilder({
   initialResume,
   initialAtsScore,
   jobKeywords,
+  family = [],
 }: ResumeBuilderProps) {
   const [resume, setResume] = useState<ResumeData>(initialResume);
   const [atsScore, setAtsScore] = useState<ATSScore | null>(initialAtsScore);
@@ -203,9 +207,45 @@ export function ResumeBuilder({
       </div>
 
       {/* Main content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {family.length > 0 && (
+          <aside className="w-52 flex-shrink-0 border-r border-white/10 bg-[#0c0e14] flex flex-col overflow-hidden">
+            <div className="px-3 py-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                <Layers className="w-3.5 h-3.5" />
+                Generated resumes
+              </div>
+            </div>
+            <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+              {family.map((v) => {
+                const active = v.id === resumeId;
+                const title = v.is_base
+                  ? "Base resume"
+                  : v.filename.replace(/\.[^.]+$/, "").replace(/^tailored_/i, "Tailored ") ||
+                    "Tailored";
+                return (
+                  <Link
+                    key={v.id}
+                    href={`/builder/${v.id}`}
+                    className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                      active
+                        ? "bg-indigo-500/20 text-white border border-indigo-500/40"
+                        : "text-gray-400 hover:bg-white/5 hover:text-gray-200 border border-transparent"
+                    }`}
+                  >
+                    <span className="block truncate font-medium">{title}</span>
+                    {!v.is_base && v.ats_overall != null && (
+                      <span className="text-xs text-gray-500">ATS {v.ats_overall}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
+
         {/* Center: preview or edit */}
-        <div className="flex-1 overflow-y-auto bg-gray-950">
+        <div className="flex-1 min-w-0 overflow-y-auto bg-gray-950">
           {activeTab === "preview" ? (
             <div className="flex justify-center py-8 px-4">
               <div className="shadow-2xl">

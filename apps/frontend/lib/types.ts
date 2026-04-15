@@ -116,6 +116,14 @@ export interface ResumeListItem {
   updated_at: string;
 }
 
+/** Base + tailored variants for the resume builder sidebar */
+export interface ResumeFamilyVariant {
+  id: string;
+  filename: string;
+  is_base: boolean;
+  ats_overall: number | null;
+}
+
 export interface GeneratePreviewResponse {
   generation_id: string;
   tailored_resume: ResumeData;

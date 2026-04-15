@@ -78,6 +78,8 @@ export async function getResume(resumeId: string) {
     ats_score: import("@/lib/types").ATSScore | null;
     job_id: string | null;
     job_keywords: import("@/lib/types").JobKeywords | null;
+    base_id: string;
+    family: import("@/lib/types").ResumeFamilyVariant[];
     created_at: string;
     updated_at: string;
   }>(`/resumes/${resumeId}`);
