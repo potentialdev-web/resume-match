@@ -422,22 +422,13 @@ MISSING JD KEYWORDS (not yet in resume): {missing_keywords}
 BULLETS WITHOUT ACTION VERBS: {weak_verb_bullets}
 BULLETS WITHOUT QUANTIFICATION: {weak_quant_bullets}
 
-YOUR THREE TASKS (address ALL):
+YOUR TWO TASKS:
 
 TASK 1 - ACTION VERBS:
 Rewrite each bullet in WEAK_VERB_BULLETS so it starts with a strong action verb. Preserve all content — only change the opening word/phrase.
 Strong action verbs: Built, Led, Developed, Implemented, Designed, Automated, Optimized, Deployed, Architected, Managed, Reduced, Increased, Delivered, Integrated, Spearheaded, Launched, Scaled, Streamlined, Collaborated, Created.
 
-TASK 2 - QUANTIFICATION:
-For each bullet in WEAK_QUANT_BULLETS, add a realistic quantitative estimate using context clues from the rest of the resume and the role.
-Examples:
-- "managed a team" → "managed a team of 6 engineers"
-- "reduced load time" → "reduced load time by ~40%"
-- "processed data" → "processed 500K+ records daily"
-- "improved accuracy" → "improved model accuracy by ~15%"
-Use ~ prefix for estimates you are not certain about. Do NOT add numbers to bullets where there is no logical basis for a metric.
-
-TASK 3 - KEYWORD INJECTION:
+TASK 2 - KEYWORD INJECTION:
 For each missing keyword, either:
 a) Add it to "additional.technicalSkills" if it is a skill/technology/tool that the candidate plausibly has based on their experience (e.g., if they work on AI systems, add "AI systems"; if they built APIs, add "REST APIs")
 b) Weave it into the most relevant existing bullet point if it fits naturally
@@ -477,29 +468,33 @@ Output ONLY this JSON format — nothing else:
 # Dedicated quantification pass — only adds numbers, no other changes
 # ---------------------------------------------------------------------------
 
-QUANTIFY_BULLETS_PROMPT = """You are a resume quantification specialist. Add measurable numbers to the bullets listed below.
+QUANTIFY_BULLETS_PROMPT = """You are a resume quantification specialist. Your job is to add concrete numbers to bullets — but ONLY where a number is genuinely supported by context.
 
 CONTEXT — candidate's roles and technologies:
 {context_summary}
 
-BULLETS THAT NEED QUANTIFICATION:
+BULLETS WITHOUT NUMBERS:
 {weak_quant_bullets}
 
-INSTRUCTIONS:
-- For EVERY bullet listed, output a change that adds a realistic quantitative estimate
-- Use numbers that make sense given the candidate's seniority, industry, and role
-- Common patterns:
-    • Team size: "managed team" → "managed team of N engineers"
-    • Performance: "improved X" → "improved X by ~N%"
-    • Scale: "handled requests" → "handled N,000+ requests/day"
-    • Users/customers: "served users" → "served N,000+ users"
-    • Time saved: "automated process" → "automated process saving ~N hours/week"
-    • Reduction: "reduced errors" → "reduced errors by ~N%"
-    • Coverage/output: "wrote tests" → "wrote N+ unit tests achieving N% coverage"
-- Use ~ prefix for estimates (e.g., ~40%, ~5 engineers)
-- Do NOT add numbers where there is genuinely no logical basis
-- Do NOT change the action verb or core meaning of the bullet
-- Copy "original" EXACTLY verbatim from the bullet listed above
+STRICT RULES:
+- BE HIGHLY SELECTIVE. Only quantify bullets where the number is clearly defensible:
+    • The bullet already mentions a concrete thing that can be counted (team, users, units, tests, time)
+    • The candidate's role strongly implies a specific scale (senior engineer → likely 3-8 person team)
+- Do NOT slap "~XX%" on every bullet. Vague percentage improvements like "improving X by ~30%" are the #1 sign of a fake resume. AVOID these unless the bullet explicitly describes a measurable outcome.
+- SKIP bullets that are about general responsibilities, process descriptions, or qualitative work — these do NOT need numbers.
+- Maximum {max_per_job} quantifications per job/company. Pick only the BEST candidates.
+- Prefer concrete counts (team of 5, 3000 units, 2 weeks) over vague percentages (~30%, ~40%).
+- Do NOT change the action verb or core meaning of the bullet.
+- Copy "original" EXACTLY verbatim from the bullet listed above.
+- If fewer than {max_per_job} bullets per job deserve a number, output fewer. Empty "changes" array is fine.
+
+GOOD quantification (concrete, defensible):
+    "Developed validation software to screen car computers, catching critical design issues pre-installation"
+    → "Developed Python/Bash validation software to screen 110,000 car computers within 2 weeks, catching critical design issues pre-installation"
+
+BAD quantification (vague percentage, obviously fabricated):
+    "Architected and integrated back-end services with Node.js and MongoDB"
+    → "Architected and integrated back-end services with Node.js and MongoDB, reducing query response time by ~40%"
 
 Output ONLY this JSON — no other text:
 {{
@@ -509,7 +504,7 @@ Output ONLY this JSON — no other text:
       "action": "replace",
       "original": "exact original bullet text",
       "value": "bullet text with number added",
-      "reason": "added team size / scale / percentage"
+      "reason": "added team size / scale / concrete count"
     }}
   ]
 }}"""
@@ -527,7 +522,7 @@ DIFF_IMPROVE_PROMPT = """Given this resume and job description, output a JSON ob
 
 RULES:
 1. Only modify content — never change names, companies, dates, institutions, or degrees
-2. Do not invent skills, metrics, or achievements not supported by the original resume text
+2. Do NOT invent metrics, percentages, or numbers. If the original bullet has no numbers, do NOT add "by ~30%" or similar. Only keep numbers that already exist in the original.
 3. Do not add new work entries, education entries, or project entries
 4. {strategy_instruction}
 5. Each change MUST include the original text (copied exactly) so it can be verified

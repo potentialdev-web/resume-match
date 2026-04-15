@@ -363,13 +363,28 @@ async def run_ats_boost_pass(
     return resume
 
 
+def _cap_bullets_per_job(
+    bullets: list[tuple[str, str]], max_per_job: int = 2,
+) -> list[tuple[str, str]]:
+    """Limit the number of quantification candidates per job entry."""
+    counts: dict[str, int] = {}
+    result: list[tuple[str, str]] = []
+    for path, text in bullets:
+        prefix = path.split(".description")[0]  # e.g. "workExperience[0]"
+        counts.setdefault(prefix, 0)
+        if counts[prefix] < max_per_job:
+            result.append((path, text))
+            counts[prefix] += 1
+    return result
+
+
 async def run_quantification_pass(
     resume: dict[str, Any],
-    batch_size: int = 18,
+    max_per_job: int = 2,
 ) -> dict[str, Any]:
-    """Pass 2: dedicated quantification — adds numbers to ALL unquantified bullets.
+    """Pass 2: selective quantification — adds numbers only where clearly defensible.
 
-    Splits into multiple LLM calls if there are many bullets to ensure complete coverage.
+    Caps at max_per_job quantifications per work entry to keep things authentic.
     """
     _, weak_quant_bullets = _collect_boost_targets(resume)
 
@@ -377,44 +392,35 @@ async def run_quantification_pass(
         logger.info("Quantification pass: all bullets already quantified")
         return resume
 
+    capped = _cap_bullets_per_job(weak_quant_bullets, max_per_job)
+    if not capped:
+        return resume
+
     context_summary = _build_context_summary(resume)
-    total_fixed = 0
 
-    # Process in batches so every bullet gets attention
-    for batch_start in range(0, len(weak_quant_bullets), batch_size):
-        batch = weak_quant_bullets[batch_start: batch_start + batch_size]
+    def _fmt(items: list[tuple[str, str]]) -> str:
+        return "\n".join(f'  {path}: "{text}"' for path, text in items)
 
-        def _fmt(items: list[tuple[str, str]]) -> str:
-            return "\n".join(f'  {path}: "{text}"' for path, text in items)
+    prompt = QUANTIFY_BULLETS_PROMPT.format(
+        context_summary=context_summary,
+        weak_quant_bullets=_fmt(capped),
+        max_per_job=max_per_job,
+    )
 
-        prompt = QUANTIFY_BULLETS_PROMPT.format(
-            context_summary=context_summary,
-            weak_quant_bullets=_fmt(batch),
+    try:
+        result = await complete_json(
+            prompt=prompt,
+            system_prompt="You are a resume quantification engine. Be highly selective — only add numbers where clearly defensible. Output only valid JSON.",
+            max_tokens=3000,
         )
+    except Exception as e:
+        logger.warning("Quantification pass failed: %s", e)
+        return resume
 
-        try:
-            result = await complete_json(
-                prompt=prompt,
-                system_prompt="You are a resume quantification engine. Output only valid JSON.",
-                max_tokens=4096,
-            )
-        except Exception as e:
-            logger.warning("Quantification pass batch %d failed: %s", batch_start, e)
-            continue
-
-        changes = result.get("changes", [])
-        if changes:
-            resume = apply_diffs(resume, changes)
-            total_fixed += len(changes)
-            logger.info(
-                "Quantification batch %d-%d: applied %d change(s)",
-                batch_start, batch_start + len(batch), len(changes),
-            )
-        # Re-collect targets so next batch doesn't re-process already-fixed bullets
-        _, weak_quant_bullets = _collect_boost_targets(resume)
-        if not weak_quant_bullets:
-            break
+    changes = result.get("changes", [])
+    if changes:
+        resume = apply_diffs(resume, changes)
+        logger.info("Quantification pass: applied %d change(s)", len(changes))
 
     resume = _preserve_personal_info(resume, resume)
-    logger.info("Quantification pass total: %d change(s) applied", total_fixed)
     return resume
