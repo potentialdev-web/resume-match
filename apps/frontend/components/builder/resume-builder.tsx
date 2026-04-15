@@ -282,17 +282,35 @@ function EditForm({
 
       {/* Experience */}
       <Section title="Experience">
-        {resume.workExperience.map((exp, i) => (
+        {(resume.workExperience?.length ?? 0) === 0 && (
+          <p className="text-sm text-gray-500 mb-3">
+            No roles yet. Add a company and job title below.
+          </p>
+        )}
+        {(resume.workExperience ?? []).map((exp, i) => (
           <div
             key={exp.id || i}
             className="border border-white/10 rounded-lg p-4 space-y-3 mb-3"
           >
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  const list = [...(resume.workExperience ?? [])];
+                  list.splice(i, 1);
+                  onChange("workExperience", list);
+                }}
+                className="text-xs text-red-400 hover:text-red-300"
+              >
+                Remove
+              </button>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <Field
                 label="Title"
                 value={exp.title}
                 onChange={(v) => {
-                  const updated = [...resume.workExperience];
+                  const updated = [...(resume.workExperience ?? [])];
                   updated[i] = { ...exp, title: v };
                   onChange("workExperience", updated);
                 }}
@@ -301,7 +319,7 @@ function EditForm({
                 label="Company"
                 value={exp.company}
                 onChange={(v) => {
-                  const updated = [...resume.workExperience];
+                  const updated = [...(resume.workExperience ?? [])];
                   updated[i] = { ...exp, company: v };
                   onChange("workExperience", updated);
                 }}
@@ -310,7 +328,7 @@ function EditForm({
                 label="Years"
                 value={exp.years}
                 onChange={(v) => {
-                  const updated = [...resume.workExperience];
+                  const updated = [...(resume.workExperience ?? [])];
                   updated[i] = { ...exp, years: v };
                   onChange("workExperience", updated);
                 }}
@@ -319,7 +337,7 @@ function EditForm({
                 label="Location"
                 value={exp.location ?? ""}
                 onChange={(v) => {
-                  const updated = [...resume.workExperience];
+                  const updated = [...(resume.workExperience ?? [])];
                   updated[i] = { ...exp, location: v };
                   onChange("workExperience", updated);
                 }}
@@ -328,9 +346,9 @@ function EditForm({
             <div>
               <label className="text-xs text-gray-500 block mb-1">Bullets (one per line)</label>
               <textarea
-                value={exp.description.join("\n")}
+                value={(exp.description ?? []).join("\n")}
                 onChange={(e) => {
-                  const updated = [...resume.workExperience];
+                  const updated = [...(resume.workExperience ?? [])];
                   updated[i] = {
                     ...exp,
                     description: e.target.value
@@ -346,6 +364,26 @@ function EditForm({
             </div>
           </div>
         ))}
+        <button
+          type="button"
+          onClick={() => {
+            const list = [...(resume.workExperience ?? [])];
+            const nextId =
+              list.reduce((m, e) => Math.max(m, e.id ?? 0), 0) + 1;
+            list.push({
+              id: nextId,
+              title: "",
+              company: "",
+              years: "",
+              location: "",
+              description: [],
+            });
+            onChange("workExperience", list);
+          }}
+          className="text-sm text-indigo-400 hover:text-indigo-300"
+        >
+          + Add company
+        </button>
       </Section>
 
       {/* Education */}
