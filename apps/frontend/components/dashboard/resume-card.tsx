@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ResumeListItem } from "@/lib/types";
 import { scoreColor, formatDate } from "@/lib/utils";
 import { ScoreRingCompact } from "@/components/ats/score-ring";
-import { FileText, Trash2, Download, Edit3, Crown } from "lucide-react";
+import { FileText, Trash2, Download, Edit3, Crown, Sparkles } from "lucide-react";
 import { deleteResume } from "@/lib/api/client";
 
 interface ResumeCardProps {
@@ -74,7 +74,14 @@ export function ResumeCard({ resume, onDeleted }: ResumeCardProps) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-2 mt-4 pt-4 border-t border-white/10">
+      <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+        <Link
+          href={`/generate?from=${encodeURIComponent(resume.id)}`}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-indigo-300 hover:text-white hover:bg-indigo-500/20 transition-colors"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          New job
+        </Link>
         <Link
           href={`/builder/${resume.id}`}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-gray-300 hover:text-white hover:bg-white/10 transition-colors"

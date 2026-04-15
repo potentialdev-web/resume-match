@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { StepUpload } from "./step-upload";
 import { StepJD } from "./step-jd";
@@ -63,6 +64,8 @@ function StepIndicator({ current }: { current: Step }) {
 }
 
 export function GenerateWizard() {
+  const searchParams = useSearchParams();
+  const fromResumeId = searchParams.get("from");
   const [step, setStep] = useState<Step>("upload");
   const [resumeId, setResumeId] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -104,7 +107,10 @@ export function GenerateWizard() {
 
       <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
         {step === "upload" && (
-          <StepUpload onComplete={handleUploadComplete} />
+          <StepUpload
+            onComplete={handleUploadComplete}
+            initialResumeId={fromResumeId}
+          />
         )}
 
         {(step === "jd" || step === "generating") && (
