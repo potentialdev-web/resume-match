@@ -23,6 +23,7 @@ export default async function BuilderPage({ params }: BuilderPageProps) {
   return (
     <ResumeBuilder
       resumeId={id}
+      initialFilename={resumeData.filename}
       initialResume={resumeData.parsed_data}
       initialAtsScore={resumeData.ats_score}
       jobKeywords={resumeData.job_keywords ?? undefined}

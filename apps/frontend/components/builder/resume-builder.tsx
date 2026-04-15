@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ATSScore, JobKeywords, ResumeData, ResumeFamilyVariant } from "@/lib/types";
 import { ATSScorePanel } from "@/components/ats/ats-score-panel";
 import { ResumeRenderer } from "@/components/resume/resume-renderer";
@@ -18,9 +18,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { resumeDisplayTitle } from "@/lib/utils";
+import { EditableResumeLabel } from "@/components/resume/editable-resume-label";
 
 interface ResumeBuilderProps {
   resumeId: string;
+  /** Stored filename e.g. `Senior Engineer.json` (editable label) */
+  initialFilename: string;
   initialResume: ResumeData;
   initialAtsScore: ATSScore | null;
   jobKeywords?: JobKeywords;
@@ -30,6 +33,7 @@ interface ResumeBuilderProps {
 
 export function ResumeBuilder({
   resumeId,
+  initialFilename,
   initialResume,
   initialAtsScore,
   jobKeywords,
@@ -43,7 +47,22 @@ export function ResumeBuilder({
   const [optimizing, setOptimizing] = useState(false);
   const [optimizeResult, setOptimizeResult] = useState<{ delta: number } | null>(null);
   const [activeTab, setActiveTab] = useState<"edit" | "preview">("preview");
+  const [currentFilename, setCurrentFilename] = useState(initialFilename);
+  const [familyFilenames, setFamilyFilenames] = useState<Record<string, string>>(() =>
+    Object.fromEntries(family.map((f) => [f.id, f.filename]))
+  );
   const scoreDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const familyKey = useMemo(
+    () => family.map((f) => `${f.id}:${f.filename}`).join("|"),
+    [family]
+  );
+
+  useEffect(() => {
+    setCurrentFilename(initialFilename);
+    setFamilyFilenames(Object.fromEntries(family.map((f) => [f.id, f.filename])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `family` is summarized in familyKey
+  }, [resumeId, initialFilename, familyKey]);
 
   // Debounce ATS score recalculation on resume edits — always pass job keywords
   const recalculateScore = useCallback(
@@ -122,9 +141,21 @@ export function ResumeBuilder({
 
         <div className="h-4 w-px bg-white/10 mx-1" />
 
-        <span className="text-sm text-gray-300 truncate max-w-[200px]">
+        <span className="text-sm text-gray-300 truncate max-w-[160px]">
           {resume.personalInfo.name || "Resume"}
         </span>
+
+        <div className="h-4 w-px bg-white/10" />
+
+        <EditableResumeLabel
+          resumeId={resumeId}
+          filename={currentFilename}
+          variant="bar"
+          onSaved={(fn) => {
+            setCurrentFilename(fn);
+            setFamilyFilenames((prev) => ({ ...prev, [resumeId]: fn }));
+          }}
+        />
 
         <div className="ml-auto flex items-center gap-2">
           {/* Tab toggle */}
@@ -220,9 +251,10 @@ export function ResumeBuilder({
             <nav className="flex-1 overflow-y-auto p-2 space-y-1">
               {family.map((v) => {
                 const active = v.id === resumeId;
+                const fn = familyFilenames[v.id] ?? v.filename;
                 const title = v.is_base
                   ? "Base resume"
-                  : resumeDisplayTitle(v.filename);
+                  : resumeDisplayTitle(fn);
                 return (
                   <Link
                     key={v.id}

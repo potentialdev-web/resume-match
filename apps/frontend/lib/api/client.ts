@@ -92,6 +92,13 @@ export async function updateResume(resumeId: string, data: import("@/lib/types")
   });
 }
 
+export async function updateResumeLabel(resumeId: string, label: string) {
+  return request<{ success: boolean; filename: string }>(`/resumes/${resumeId}/label`, {
+    method: "PATCH",
+    body: JSON.stringify({ label }),
+  });
+}
+
 export async function deleteResume(resumeId: string) {
   return request<{ success: boolean }>(`/resumes/${resumeId}`, {
     method: "DELETE",

@@ -103,6 +103,11 @@ export default function DashboardPage() {
                 onDeleted={(id) =>
                   setResumes((prev) => prev.filter((x) => x.id !== id))
                 }
+                onLabelUpdated={(id, filename) =>
+                  setResumes((prev) =>
+                    prev.map((x) => (x.id === id ? { ...x, filename } : x))
+                  )
+                }
               />
             ))}
           </div>
@@ -122,6 +127,11 @@ export default function DashboardPage() {
                 resume={r}
                 onDeleted={(id) =>
                   setResumes((prev) => prev.filter((x) => x.id !== id))
+                }
+                onLabelUpdated={(id, filename) =>
+                  setResumes((prev) =>
+                    prev.map((x) => (x.id === id ? { ...x, filename } : x))
+                  )
                 }
               />
             ))}

@@ -32,9 +32,14 @@ export function gradeColor(grade: string): string {
   return "text-red-400";
 }
 
+/** Strip extension for editing / display stem. */
+export function filenameStem(filename: string): string {
+  return (filename || "").replace(/\.[^.]+$/, "").trim();
+}
+
 /** Readable dashboard title from stored filename (strips extension, labels old tailored_* ids). */
 export function resumeDisplayTitle(filename: string): string {
-  const base = (filename || "").replace(/\.[^.]+$/, "").trim();
+  const base = filenameStem(filename);
   if (!base) return "Untitled";
   if (/^tailored_[a-f0-9]{6,}$/i.test(base)) {
     return "Tailored resume (auto ID)";

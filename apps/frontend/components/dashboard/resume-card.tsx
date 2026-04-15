@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { ResumeListItem } from "@/lib/types";
-import { scoreColor, formatDate, resumeDisplayTitle } from "@/lib/utils";
+import { scoreColor, formatDate } from "@/lib/utils";
+import { EditableResumeLabel } from "@/components/resume/editable-resume-label";
 import { ScoreRingCompact } from "@/components/ats/score-ring";
 import { FileText, Trash2, Download, Edit3, Crown, Sparkles } from "lucide-react";
 import { deleteResume } from "@/lib/api/client";
@@ -10,9 +11,10 @@ import { deleteResume } from "@/lib/api/client";
 interface ResumeCardProps {
   resume: ResumeListItem;
   onDeleted: (id: string) => void;
+  onLabelUpdated?: (id: string, filename: string) => void;
 }
 
-export function ResumeCard({ resume, onDeleted }: ResumeCardProps) {
+export function ResumeCard({ resume, onDeleted, onLabelUpdated }: ResumeCardProps) {
   const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!confirm("Delete this resume?")) return;
@@ -54,9 +56,11 @@ export function ResumeCard({ resume, onDeleted }: ResumeCardProps) {
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-semibold text-white truncate" title={resume.filename}>
-            {resumeDisplayTitle(resume.filename)}
-          </h3>
+          <EditableResumeLabel
+            resumeId={resume.id}
+            filename={resume.filename}
+            onSaved={(fn) => onLabelUpdated?.(resume.id, fn)}
+          />
           {resume.parent_id && (
             <p className="text-xs text-indigo-400 mt-0.5">Tailored resume</p>
           )}

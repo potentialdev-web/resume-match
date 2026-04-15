@@ -23,6 +23,7 @@ from app.database import (
     update_resume,
 )
 from app.schemas.models import ATSScore, ResumeData, ResumeListItem
+from app.services.job_label import safe_filename_stem
 from app.services.parser import parse_document, parse_resume_to_json
 from app.services.pdf import render_resume_pdf
 
@@ -185,6 +186,25 @@ def get_resume_by_id(
         "created_at": resume.created_at.isoformat(),
         "updated_at": resume.updated_at.isoformat(),
     }
+
+
+@router.patch("/{resume_id}/label")
+def update_resume_label(
+    resume_id: str,
+    body: dict[str, Any],
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    """Update dashboard/builder display name (stored as filename stem + .json)."""
+    resume = get_resume(session, resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    label = str(body.get("label", "")).strip()
+    if not label:
+        raise HTTPException(status_code=400, detail="label is required")
+    stem = safe_filename_stem(label)
+    new_fn = f"{stem}.json"
+    update_resume(session, resume, filename=new_fn)
+    return {"success": True, "filename": new_fn}
 
 
 @router.patch("/{resume_id}")
